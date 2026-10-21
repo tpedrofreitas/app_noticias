@@ -1,5 +1,7 @@
 import 'package:app_noticias/detalhe_noticia_page.dart';
+import 'package:app_noticias/models/categoria.dart';
 import 'package:app_noticias/models/noticia.dart';
+import 'package:app_noticias/services/categoria_services.dart';
 import 'package:app_noticias/services/noticias_services.dart';
 import 'package:app_noticias/sobre_page.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +17,24 @@ class _HomePageState extends State<HomePage> {
   final NoticiasService _noticiasService = NoticiasService();
   late Future<List<Noticia>> _listaNoticias;
 
-  static final List<String> categorias = [
-    "Todas",
-  ];
+  final CategoriaServices _categoriaServices = CategoriaServices();
+
+  List<Categoria> _listaCategorias = [];
+  String _categoriaSelecionada = 'Todas';
 
   bool _buscando = false;
   String _textoPesquisa = '';
+
+  Future<void> carregarCategorias() async {
+    try {
+      final categorias = await _categoriaServices.getCategorias();
+      setState(() {
+        _listaCategorias = categorias;
+      });
+    } catch (e) {
+      debugPrint('Erro ao carregar categorias: $e');
+    }
+  }
 
   List<Noticia> aplicarfiltro(List<Noticia> noticias) {
     if (_textoPesquisa.isNotEmpty) {
@@ -32,6 +46,13 @@ class _HomePageState extends State<HomePage> {
       }).toList();
     }
 
+    if (_categoriaSelecionada != 'Todas') {
+      return noticias.where((noticia) {
+        return noticia.categoriaNome.toLowerCase() ==
+            _categoriaSelecionada.toLowerCase();
+      }).toList();
+    }
+
     return noticias;
   }
 
@@ -40,6 +61,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     _listaNoticias = _noticiasService.getNoticias();
+    carregarCategorias();
   }
 
   @override
@@ -115,31 +137,46 @@ class _HomePageState extends State<HomePage> {
         children: [
           SizedBox(
             height: 45,
-            child: ListView(
+            child: ListView.builder(
+              itemCount: _listaCategorias.length + 1,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              children: categorias.map((categoria) {
-                final selecionada = categoria == "Todas";
+              itemBuilder: (context, index) {
+                final categoria = index == 0
+                    ? 'Todas'
+                    : _listaCategorias[index - 1].nome;
 
-                return Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: selecionada
-                          ? Colors.black
-                          : const Color(0xFFEDEDED),
+                final selecionada = _categoriaSelecionada == categoria;
+
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _categoriaSelecionada = categoria;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selecionada
+                            ? Colors.black
+                            : const Color(0xFFEDEDED),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      categoria,
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ),
-                  alignment: Alignment.center,
-                  child: Text(categoria, style: const TextStyle(fontSize: 12)),
                 );
-              }).toList(),
+              },
             ),
           ),
           Expanded(

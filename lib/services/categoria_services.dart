@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class CategoriaServices {
   static const String baseUrl = 'http://10.0.2.2:8000/api';
 
-  Future<List<Categoria>> gerCategoria() async {
+  Future<List<Categoria>> getCategorias() async {
     try {
       final resposta = await http.get(Uri.parse('$baseUrl/categorias'));
       if (resposta.statusCode == 200) {
