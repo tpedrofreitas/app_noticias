@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         _mensagemErro = e.toString().replaceFirst('Exception', '');
@@ -87,6 +87,13 @@ class _LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
+              const SizedBox(height: 10),
+              if (_mensagemErro != null) ...[
+                Text(
+                  _mensagemErro!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
               const SizedBox(
                 height: 20,
               ),
