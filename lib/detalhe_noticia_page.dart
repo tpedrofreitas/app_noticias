@@ -10,7 +10,7 @@ class DetalheNoticiaPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Noticia '),
+        title: const Text('Notícia'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -22,7 +22,7 @@ class DetalheNoticiaPage extends StatelessWidget {
               child: Image.network(
                 noticia.imagem!,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
+                errorBuilder: (context, erro, stack) =>
                     const Icon(Icons.image_outlined),
               ),
             ),
@@ -67,9 +67,10 @@ class DetalheNoticiaPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFF1b2A4A),
                     ),
                     maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis, //...
                   ),
                   const SizedBox(height: 8),
                   Text(

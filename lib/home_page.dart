@@ -1,8 +1,9 @@
 import 'package:app_noticias/detalhe_noticia_page.dart';
+import 'package:app_noticias/login_page.dart';
 import 'package:app_noticias/models/categoria.dart';
 import 'package:app_noticias/models/noticia.dart';
-import 'package:app_noticias/services/categoria_services.dart';
-import 'package:app_noticias/services/noticias_services.dart';
+import 'package:app_noticias/services/categorias_services.dart';
+import 'package:app_noticias/services/noticias_service.dart';
 import 'package:app_noticias/sobre_page.dart';
 import 'package:flutter/material.dart';
 
@@ -16,8 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final NoticiasService _noticiasService = NoticiasService();
   late Future<List<Noticia>> _listaNoticias;
-
-  final CategoriaServices _categoriaServices = CategoriaServices();
+  final CategoriasService _categoriasService = CategoriasService();
 
   List<Categoria> _listaCategorias = [];
   String _categoriaSelecionada = 'Todas';
@@ -25,9 +25,17 @@ class _HomePageState extends State<HomePage> {
   bool _buscando = false;
   String _textoPesquisa = '';
 
+  void carregarDados() {
+    _listaNoticias = _noticiasService.getNoticias();
+    carregarCategorias();
+  }
+
   Future<void> carregarCategorias() async {
     try {
-      final categorias = await _categoriaServices.getCategorias();
+      final categorias = await _categoriasService.getCategorias();
+
+      if (!mounted) return;
+
       setState(() {
         _listaCategorias = categorias;
       });
@@ -36,7 +44,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  List<Noticia> aplicarfiltro(List<Noticia> noticias) {
+  List<Noticia> aplicarFiltro(List<Noticia> noticias) {
     if (_textoPesquisa.isNotEmpty) {
       return noticias.where((noticia) {
         return noticia.titulo.toLowerCase().contains(
@@ -59,7 +67,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
     _listaNoticias = _noticiasService.getNoticias();
     carregarCategorias();
   }
@@ -114,7 +121,7 @@ class _HomePageState extends State<HomePage> {
             ),
             ListTile(
               leading: const Icon(Icons.home),
-              title: const Text('Lista de Noticias'),
+              title: const Text('Lista de Notícias'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
@@ -126,6 +133,20 @@ class _HomePageState extends State<HomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const SobrePage(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.login),
+              title: const Text('Entrar'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginPage(),
                   ),
                 );
               },
@@ -191,28 +212,52 @@ class _HomePageState extends State<HomePage> {
 
                 if (asyncSnapshot.hasError) {
                   return Center(
-                    child: Text('${asyncSnapshot.error}'),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          asyncSnapshot.error.toString().replaceFirst(
+                            'Exception:',
+                            '',
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              carregarDados();
+                            });
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Tentar Novamente'),
+                        ),
+                      ],
+                    ),
                   );
                 }
 
                 final todasNoticias = asyncSnapshot.data ?? [];
 
-                final noticias = aplicarfiltro(todasNoticias);
+                final noticias = aplicarFiltro(todasNoticias);
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: noticias.length,
                   itemBuilder: (context, index) {
                     final noticia = noticias[index];
+
                     return InkWell(
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              DetalheNoticiaPage(noticia: noticia),
+                          builder: (context) => DetalheNoticiaPage(
+                            noticia: noticia,
+                          ),
                         ),
                       ),
-
                       child: Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         elevation: 0,
@@ -233,7 +278,7 @@ class _HomePageState extends State<HomePage> {
                               child: Image.network(
                                 noticia.imagem!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
+                                errorBuilder: (context, erro, stack) =>
                                     const Icon(Icons.image_outlined),
                               ),
                             ),
@@ -278,9 +323,10 @@ class _HomePageState extends State<HomePage> {
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1b2A4A),
                                     ),
                                     maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                    overflow: TextOverflow.ellipsis, //...
                                   ),
                                   const SizedBox(height: 8),
                                   Text(

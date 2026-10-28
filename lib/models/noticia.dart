@@ -4,9 +4,9 @@ class Noticia {
   final String resumo;
   final String conteudo;
   final int categoriaId;
+  final String categoriaNome;
   final String? imagem;
   final DateTime createdAt;
-  final String categoriaNome;
 
   Noticia({
     required this.id,
@@ -14,8 +14,8 @@ class Noticia {
     required this.resumo,
     required this.conteudo,
     required this.categoriaId,
-    required this.imagem,
     required this.categoriaNome,
+    required this.imagem,
     required this.createdAt,
   });
 
@@ -26,17 +26,17 @@ class Noticia {
       resumo: json['resumo'],
       conteudo: json['conteudo'],
       categoriaId: json['categoria_id'],
-      imagem: json['imagem'],
       categoriaNome: json['categoria_nome'],
+      imagem: json['imagem'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
 
+  //07/05/2026
   String get dataFormatada {
     final dia = createdAt.day.toString().padLeft(2, '0');
     final mes = createdAt.month.toString().padLeft(2, '0');
     final ano = createdAt.year.toString();
-
     return '$dia/$mes/$ano';
   }
 }

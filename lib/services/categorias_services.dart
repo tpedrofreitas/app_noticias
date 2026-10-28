@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:app_noticias/models/categoria.dart';
 import 'package:http/http.dart' as http;
+import '../models/categoria.dart';
 
-class CategoriaServices {
+class CategoriasService {
   static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   Future<List<Categoria>> getCategorias() async {
@@ -16,7 +16,7 @@ class CategoriaServices {
         throw Exception('Não foi possivel carregar as categorias');
       }
     } catch (e) {
-      throw Exception('Naõ conectou erro: $e');
+      throw Exception('Não conectou erro: $e');
     }
   }
 }
